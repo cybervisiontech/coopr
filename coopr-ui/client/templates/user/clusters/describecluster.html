@@ -68,7 +68,8 @@
                         </div>
                         <div class="col-sm-2">
                           <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-danger" ng-click="abort()">Abort</span>
-                            <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-warning" ng-click="pause()">Pause</span>
+                          <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-warning" ng-click="pause()">Pause</span>
+                          <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-warning" ng-click="resume()">Resume</span>
                         </div>
                       </div>
                     </td>

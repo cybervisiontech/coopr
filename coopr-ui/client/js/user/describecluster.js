@@ -249,12 +249,20 @@ ClusterView.app.controller('ClusterCtrl',
   };
 
   /**
-     * Pause current job.
-     */
-    $scope.pause = function () {
-      Helpers.submitPost('/user/clusters/pause/' + $scope.cluster.id,
-        '/user/clusters/cluster/' + $scope.cluster.id);
-    };
+   * Pause current job.
+   */
+  $scope.pause = function () {
+    Helpers.submitPost('/user/clusters/pause/' + $scope.cluster.id,
+      '/user/clusters/cluster/' + $scope.cluster.id);
+  };
+
+  /**
+   * Resume current job.
+   */
+  $scope.resume = function () {
+    Helpers.submitPost('/user/clusters/resume/' + $scope.cluster.id,
+      '/user/clusters/cluster/' + $scope.cluster.id);
+  };
 
   /**
    * Checks if an object is empty.
