@@ -249,6 +249,14 @@ ClusterView.app.controller('ClusterCtrl',
   };
 
   /**
+     * Pause current job.
+     */
+    $scope.pause = function () {
+      Helpers.submitPost('/user/clusters/pause/' + $scope.cluster.id,
+        '/user/clusters/cluster/' + $scope.cluster.id);
+    };
+
+  /**
    * Checks if an object is empty.
    */
   $scope.checkIfEmpty = function(obj) {
