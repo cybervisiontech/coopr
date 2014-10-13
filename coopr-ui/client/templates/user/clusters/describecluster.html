@@ -67,9 +67,12 @@
                           </div>
                         </div>
                         <div class="col-sm-2">
-                          <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-danger" ng-click="abort()">Abort</span>
-                          <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-warning" ng-click="pause()">Pause</span>
-                          <span ng-if="status.progressPercent !== '100'" class="btn-spl btn-warning" ng-click="resume()">Resume</span>
+                          <span ng-if="status.progressPercent !== '100'"
+                                class="btn-spl btn-danger" ng-click="abort()">Abort</span>
+                          <span ng-if="status.progressPercent !== '100'" ng-if="status.actionstatus !== 'paused'"
+                                class="btn-spl btn-warning" ng-click="pause()">Pause</span>
+                          <span ng-if="status.actionstatus == 'paused'"
+                                class="btn-spl btn-warning" ng-click="resume()">Resume</span>
                         </div>
                       </div>
                     </td>
@@ -77,7 +80,7 @@
                   <tr ng-controller="ClusterProgressCtrl">
                     <td>Status</td>
                     <td class="cluster-status [[status.class]]">
-                      [[ status.action ]] 
+                      [[ status.action ]]
                       <span class="lowercasify">[[status.statusText]]</span>
                       <span ng-if="cluster.message"> - [[cluster.message]]</span>
                     </td>
@@ -116,7 +119,7 @@
                         </tbody>
                       </table>
                       <div class="small-font text-light" style="padding-left: 10px;" ng-if="cluster.clusterTemplate.administration.leaseduration.step === 0">You can extend your lease by any amount of time.</div>
-                      <div class="small-font text-light" ng-class="{'text-danger': extendLeaseInvalid}" style="padding-left: 10px;" ng-if="cluster.clusterTemplate.administration.leaseduration.step">Max lease extension time is 
+                      <div class="small-font text-light" ng-class="{'text-danger': extendLeaseInvalid}" style="padding-left: 10px;" ng-if="cluster.clusterTemplate.administration.leaseduration.step">Max lease extension time is
                         [[maxLeaseStr]].
                       </div>
                     </td>

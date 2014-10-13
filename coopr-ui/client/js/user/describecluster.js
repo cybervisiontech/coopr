@@ -314,7 +314,8 @@ ClusterView.app.controller('ClusterProgressCtrl', ['$rootScope', '$scope', '$int
     progressPercent: '',
     statusText: '',
     class: '',
-    action: ''
+    action: '',
+    actionstatus: ''
   };
 
   // Get status first before going into interval.
@@ -378,6 +379,7 @@ ClusterView.getStatusFn = function (rootScope, scope, dataFactory, Globals) {
       if (!isNaN(progressPercent)) {
         scope.status.progressPercent = progressPercent.toFixed(0);
       }
+      scope.actionstatus = data.actionstatus;
       if (data.actionstatus in Helpers.FRIENDLY_STATUS) {
         scope.status.statusText = Helpers.FRIENDLY_STATUS[data.actionstatus];
         scope.status.class= Globals.STATUS_CLASSES[data.actionstatus];
