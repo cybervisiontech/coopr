@@ -18,6 +18,7 @@
 COOPR_SERVER_URI=${COOPR_SERVER_URI:-http://localhost:55054}
 COOPR_LOG_DIR=${COOPR_LOG_DIR:-/var/log/coopr}
 COOPR_UI_PORT=${COOPR_UI_PORT:-8100}
+COOPR_UI_SSL_PORT=${COOPR_UI_SSL_PORT:-8443}
 COOPR_HOME=${COOPR_HOME:-/opt/coopr} ; export COOPR_HOME
 
 die ( ) {
@@ -57,6 +58,7 @@ start ( ) {
   echo "Starting UI ..."
   nohup nice -1 ${COOPR_NODE} ${UI_PATH}/server.js --env=${ENVIRONMENT} \
     --cooprhost=${COOPR_SERVER_URI} --port=${COOPR_UI_PORT} \
+    --ssl=${COOPR_SSL} --sslport=${COOPR_UI_SSL_PORT} \
     --rejectUnauth=${COOPR_REJECT_UNAUTH} \
     >> ${COOPR_LOG_DIR}/${APP_NAME}.log 2>&1 < /dev/null &
   echo $! > "${pid}"
