@@ -56,6 +56,7 @@ import co.cask.coopr.shell.command.ListProvidersCommand;
 import co.cask.coopr.shell.command.ListProvisionersCommand;
 import co.cask.coopr.shell.command.ListServicesCommand;
 import co.cask.coopr.shell.command.ListTenantsCommand;
+import co.cask.coopr.shell.command.QuitCommand;
 import co.cask.coopr.shell.command.RecallAutomatorTypeResourcesCommand;
 import co.cask.coopr.shell.command.RecallProviderTypeResourcesCommand;
 import co.cask.coopr.shell.command.RestartServiceOnClusterCommand;
@@ -85,7 +86,7 @@ public class CooprCommandSets {
       getTenantCommandSet(injector),
       getProvisionerCommandSet(injector)
     );
-    return new CommandSet<Command>(getCommonComands(injector), commandSets);
+    return new CommandSet<Command>(getCommonCommands(injector), commandSets);
   }
 
   public static CommandSet<Command> getCommandSetForAdmin(Injector injector) {
@@ -95,7 +96,7 @@ public class CooprCommandSets {
       getPluginCommandSet(injector),
       getProvisionerCommandSet(injector)
     );
-    return new CommandSet<Command>(getCommonComands(injector), commandSets);
+    return new CommandSet<Command>(getCommonCommands(injector), commandSets);
   }
 
   public static CommandSet<Command> getCommandSetForNonAdminUser(Injector injector) {
@@ -103,13 +104,14 @@ public class CooprCommandSets {
       getClusterCommandSet(injector),
       getProvisionerCommandSet(injector)
     );
-    return new CommandSet<Command>(getCommonComands(injector), commandSets);
+    return new CommandSet<Command>(getCommonCommands(injector), commandSets);
   }
 
-  private static List<Command> getCommonComands(Injector injector) {
+  private static List<Command> getCommonCommands(Injector injector) {
     return ImmutableList.of(
       injector.getInstance(ConnectCommand.class),
-      injector.getInstance(ExitCommand.class)
+      injector.getInstance(ExitCommand.class),
+      injector.getInstance(QuitCommand.class)
     );
   }
 
