@@ -3,7 +3,6 @@ package co.cask.coopr.spec.template;
 
 import co.cask.coopr.BaseTest;
 import co.cask.coopr.account.Account;
-import co.cask.coopr.cluster.ClusterService;
 import co.cask.coopr.common.conf.Constants;
 import co.cask.coopr.provisioner.Provisioner;
 import co.cask.coopr.provisioner.TenantProvisionerService;

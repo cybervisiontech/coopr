@@ -16,13 +16,8 @@
 package co.cask.coopr.codec.json.current;
 
 import co.cask.coopr.spec.BaseEntity;
-import co.cask.coopr.spec.Link;
 import co.cask.coopr.spec.template.AbstractTemplate;
-import co.cask.coopr.spec.template.Administration;
-import co.cask.coopr.spec.template.ClusterDefaults;
 import co.cask.coopr.spec.template.ClusterTemplate;
-import co.cask.coopr.spec.template.Compatibilities;
-import co.cask.coopr.spec.template.Constraints;
 import co.cask.coopr.spec.template.Include;
 import co.cask.coopr.spec.template.Parent;
 import com.google.gson.JsonDeserializationContext;
@@ -40,26 +35,24 @@ public class ClusterTemplateCodec extends AbstractTemplateCodec<ClusterTemplate>
   private static final Type INCLUDES_TYPE = new com.google.common.reflect.TypeToken<Set<Include>>() { }.getType();
 
   @Override
-  protected void addChildFields(ClusterTemplate template, JsonObject jsonObj, JsonSerializationContext context) {
-    jsonObj.add("defaults", context.serialize(template.getClusterDefaults()));
-    jsonObj.add("compatibility", context.serialize(template.getCompatibilities()));
-    jsonObj.add("constraints", context.serialize(template.getConstraints()));
-    jsonObj.add("administration", context.serialize(template.getAdministration()));
-    jsonObj.add("links", context.serialize(template.getLinks()));
-    jsonObj.add("extends", context.serialize(template.getParent()));
-    jsonObj.add("includes", context.serialize(template.getIncludes()));
+  protected void addChildFields(AbstractTemplate template, JsonObject jsonObj, JsonSerializationContext context) {
+    super.addChildFields(template, jsonObj, context);
+    ClusterTemplate clusterTemplate = (ClusterTemplate) template;
+    jsonObj.add("extends", context.serialize(clusterTemplate.getParent()));
+    jsonObj.add("includes", context.serialize(clusterTemplate.getIncludes()));
   }
 
   @Override
-  protected BaseEntity.Builder<ClusterTemplate> getBuilder(JsonObject jsonObj,
-                                                                JsonDeserializationContext context) {
-    return ClusterTemplate.builder()
-      .setClusterDefaults(context.<ClusterDefaults>deserialize(jsonObj.get("defaults"), ClusterDefaults.class))
-      .setCompatibilities(context.<Compatibilities>deserialize(jsonObj.get("compatibility"), Compatibilities.class))
-      .setConstraints(context.<Constraints>deserialize(jsonObj.get("constraints"), Constraints.class))
-      .setAdministration(context.<Administration>deserialize(jsonObj.get("administration"), Administration.class))
-      .setLinks(context.<Set<Link>>deserialize(jsonObj.get("links"), LINKS_TYPE))
-      .setParent(context.<Parent>deserialize(jsonObj.get("extends"), Parent.class))
+  protected BaseEntity.Builder<ClusterTemplate> getBuilder(JsonObject jsonObj, JsonDeserializationContext context) {
+    ClusterTemplate.ClusterTemplateBuilder builder = (ClusterTemplate.ClusterTemplateBuilder)
+      super.getBuilder(jsonObj, context);
+    builder.setParent(context.<Parent>deserialize(jsonObj.get("extends"), Parent.class))
       .setIncludes(context.<Set<Include>>deserialize(jsonObj.get("includes"), INCLUDES_TYPE));
+    return builder;
+  }
+
+  @Override
+  protected AbstractTemplate.Builder getConcreteBuilder() {
+    return ClusterTemplate.builder();
   }
 }
