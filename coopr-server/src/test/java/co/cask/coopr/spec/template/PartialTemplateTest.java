@@ -23,9 +23,6 @@ import java.io.InputStream;
  */
 public class PartialTemplateTest extends BaseTest {
 
-  private static ClusterService clusterService;
-  private static Account account;
-
   private static ClusterTemplate insecureTemplate;
   private static ClusterTemplate secureTemplate;
   private static ClusterTemplate distributedTemplate;
@@ -41,15 +38,24 @@ public class PartialTemplateTest extends BaseTest {
 
   @BeforeClass
   public static void setupClusterServiceTests() throws Exception {
-    clusterService = injector.getInstance(ClusterService.class);
     gson = injector.getInstance(Gson.class);
     TenantProvisionerService tenantProvisionerService = injector.getInstance(TenantProvisionerService.class);
     // setup data
     tenantProvisionerService.writeProvisioner(new Provisioner("p1", "host", 50056, 100, null, null));
     tenantProvisionerService.writeTenantSpecification(new TenantSpecification("tenantX", 10, 1, 10));
     Tenant tenant = tenantStore.getTenantByName("tenantX");
-    account = new Account("user9", tenant.getId());
     entityStoreView = entityStoreService.getView(new Account(Constants.ADMIN_USER, tenant.getId()));
+  }
+
+  @Test
+  public void testTemplateLifecycle() throws Exception {
+    parse();
+    persist();
+    persistentTemplatesConsistence();
+    deleteTemplate();
+  }
+
+  public void parse() throws Exception {
     //load json templates
     ClassLoader classLoader = PartialTemplateTest.class.getClassLoader();
     InputStream insecureIn = classLoader.getResourceAsStream("partials/cdap-­distributed­-insecure.json");
@@ -64,16 +70,34 @@ public class PartialTemplateTest extends BaseTest {
     sensuPartial = gson.fromJson(IOUtils.toString(sensuIn), PartialTemplate.class);
     ldapPartial = gson.fromJson(IOUtils.toString(ldapIn), PartialTemplate.class);
 
+    Assert.assertNotNull(insecureTemplate);
+    Assert.assertNotNull(secureTemplate);
+    Assert.assertNotNull(distributedTemplate);
+    Assert.assertNotNull(sensuPartial);
+    Assert.assertNotNull(ldapPartial);
+  }
+
+  public void persist() throws Exception {
+
+    int beforePartialsCount = entityStoreView.getAllPartialTemplates().size();
+    int beforeClusterTemplatesCount = entityStoreView.getAllClusterTemplates().size();
+
     entityStoreView.writeClusterTemplate(insecureTemplate);
     entityStoreView.writeClusterTemplate(secureTemplate);
     entityStoreView.writeClusterTemplate(distributedTemplate);
 
     entityStoreView.writePartialTemplate(sensuPartial);
     entityStoreView.writePartialTemplate(ldapPartial);
+
+    int afterPartialsCount = entityStoreView.getAllPartialTemplates().size();
+    int afterClusterTemplatesCount = entityStoreView.getAllClusterTemplates().size();
+
+    Assert.assertEquals(afterPartialsCount, beforePartialsCount + 2);
+    Assert.assertEquals(afterClusterTemplatesCount, beforeClusterTemplatesCount + 3);
+
   }
 
-  @Test
-  public void testTemplates() throws Exception {
+  public void persistentTemplatesConsistence() throws Exception {
     PartialTemplate ldapInternal = entityStoreView.getPartialTemplate("LDAPInternal");
     PartialTemplate sensuInternal = entityStoreView.getPartialTemplate("sensuInternal");
 
@@ -106,6 +130,22 @@ public class PartialTemplateTest extends BaseTest {
     Assert.assertNotNull(cdapDistributedSecureHadoop.getClusterDefaults().getConfig().get("hive"));
     Assert.assertEquals("kerberos­client",
                         cdapDistributedSecureHadoop.getCompatibilities().getServices().iterator().next());
+
+  }
+
+  public void deleteTemplate() throws Exception {
+
+    int beforePartialsCount = entityStoreView.getAllPartialTemplates().size();
+    int beforeClusterTemplatesCount = entityStoreView.getAllClusterTemplates().size();
+
+    entityStoreView.deleteClusterTemplate(insecureTemplate.getName());
+    entityStoreView.deletePartialTemplate(sensuPartial.getName());
+
+    int afterPartialsCount = entityStoreView.getAllPartialTemplates().size();
+    int afterClusterTemplatesCount = entityStoreView.getAllClusterTemplates().size();
+
+    Assert.assertEquals(afterPartialsCount, beforePartialsCount - 1);
+    Assert.assertEquals(afterClusterTemplatesCount, beforeClusterTemplatesCount - 1);
 
   }
 }

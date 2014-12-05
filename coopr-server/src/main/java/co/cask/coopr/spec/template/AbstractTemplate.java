@@ -7,7 +7,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
-import javax.transaction.NotSupportedException;
 
 public abstract class AbstractTemplate extends BaseEntity {
 
@@ -73,11 +72,6 @@ public abstract class AbstractTemplate extends BaseEntity {
   public Set<Link> getLinks() {
     return links;
   }
-
-  public static Builder builder() throws NotSupportedException {
-    throw new NotSupportedException("Builder not supported for abstract template.");
-  }
-
 
   /**
    * Builder for creating templates.
