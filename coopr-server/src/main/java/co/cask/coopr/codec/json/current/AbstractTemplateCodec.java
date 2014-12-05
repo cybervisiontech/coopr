@@ -42,5 +42,4 @@ public abstract class AbstractTemplateCodec<T extends AbstractTemplate> extends 
   }
 
   protected abstract AbstractTemplate.Builder getConcreteBuilder();
-
 }
