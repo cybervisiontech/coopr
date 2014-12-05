@@ -75,6 +75,35 @@ public abstract class BaseSQLEntityStoreView extends BaseEntityStoreView {
   }
 
   @Override
+  protected byte[] getVersionEntity(EntityType entityType, String entityName) throws IOException {
+    try {
+      byte[] entityBytes = null;
+      Connection conn = dbConnectionPool.getConnection();
+      try {
+        PreparedStatement statement = getSelectStatement(conn, entityType, entityName);
+        try {
+          ResultSet rs = statement.executeQuery();
+          try {
+            if (rs.next()) {
+              entityBytes = rs.getBytes(1);
+            }
+          } finally {
+            rs.close();
+          }
+        } finally {
+          statement.close();
+        }
+      } finally {
+        conn.close();
+      }
+      return entityBytes;
+    } catch (SQLException e) {
+      throw new IOException("Exception getting entity of type " + entityType.name().toLowerCase()
+                              + " of name " + entityName + accountErrorSnippet);
+    }
+  }
+
+  @Override
   protected <T> Collection<T> getAllEntities(EntityType entityType, Function<byte[], T> transform) throws IOException {
     try {
       Connection conn = dbConnectionPool.getConnection();

@@ -26,13 +26,13 @@ import java.util.Map;
  * like openstack, aws, rackspace, or joyent that can provision machines.
  * Providers are referenced by {@link ImageType} and {@link HardwareType}.
  */
-public final class Provider extends BaseEntity {
+public final class Provider extends BaseVersionEntity {
   private final String providerType;
   private final Map<String, Object> provisionerFields;
 
   private Provider(BaseEntity.Builder baseBuilder,
-                   String providerType, Map<String, Object> provisionerFields) {
-    super(baseBuilder);
+                   String providerType, Map<String, Object> provisionerFields, int version) {
+    super(baseBuilder, version);
     Preconditions.checkArgument(providerType != null, "invalid provider type.");
     this.providerType = providerType;
     this.provisionerFields = provisionerFields == null ?
@@ -84,6 +84,7 @@ public final class Provider extends BaseEntity {
   public static class Builder extends BaseEntity.Builder<Provider> {
     private String providerType;
     private Map<String, Object> provisionerFields;
+    private int version;
 
     public Builder setProviderType(String providerType) {
       this.providerType = providerType;
@@ -95,9 +96,14 @@ public final class Provider extends BaseEntity {
       return this;
     }
 
+    public Builder setVersion(int version) {
+      this.version = version;
+      return this;
+    }
+
     @Override
     public Provider build() {
-      return new Provider(this, providerType, provisionerFields);
+      return new Provider(this, providerType, provisionerFields, version);
     }
   }
 

@@ -16,6 +16,7 @@
 package co.cask.coopr.spec.template;
 
 import co.cask.coopr.spec.BaseEntity;
+import co.cask.coopr.spec.BaseVersionEntity;
 import co.cask.coopr.spec.Link;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -29,7 +30,7 @@ import java.util.Set;
  * will be used to determine which services to place on which nodes, and what hardware and images to use.  A cluster
  * template also specifies the full set of configuration key values that are needed on the cluster.
  */
-public final class ClusterTemplate extends BaseEntity {
+public final class ClusterTemplate extends BaseVersionEntity {
   private final ClusterDefaults clusterDefaults;
   private final Constraints constraints;
   private final Compatibilities compatibilities;
@@ -38,8 +39,8 @@ public final class ClusterTemplate extends BaseEntity {
 
   private ClusterTemplate(BaseEntity.Builder baseBuilder, ClusterDefaults clusterDefaults,
                           Compatibilities compatibilities, Constraints constraints, Administration administration,
-                          Set<Link> links) {
-    super(baseBuilder);
+                          Set<Link> links, int version) {
+    super(baseBuilder, version);
     Preconditions.checkArgument(clusterDefaults != null, "cluster defaults must be specified");
     this.clusterDefaults = clusterDefaults;
     this.constraints = constraints;
@@ -111,6 +112,7 @@ public final class ClusterTemplate extends BaseEntity {
     private Compatibilities compatibilities = Compatibilities.EMPTY_COMPATIBILITIES;
     private Administration administration = Administration.EMPTY_ADMINISTRATION;
     private Set<Link> links = ImmutableSet.of();
+    private int version = 1;
 
     @Override
     public Builder setName(String name) {
@@ -155,8 +157,13 @@ public final class ClusterTemplate extends BaseEntity {
       return this;
     }
 
+    public Builder setVersion(int version) {
+      this.version = version;
+      return this;
+    }
+
     public ClusterTemplate build() {
-      return new ClusterTemplate(this, clusterDefaults, compatibilities, constraints, administration, links);
+      return new ClusterTemplate(this, clusterDefaults, compatibilities, constraints, administration, links, version);
     }
   }
 
