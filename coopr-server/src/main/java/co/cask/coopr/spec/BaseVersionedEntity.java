@@ -51,7 +51,7 @@ public class BaseVersionedEntity extends BaseEntity {
   /**
    * Base builder for creating admin versioned entities.
    */
-  protected abstract static class Builder<T extends BaseVersionedEntity> extends BaseEntity.Builder<T> {
+  public abstract static class Builder<T extends BaseVersionedEntity> extends BaseEntity.Builder<T> {
     protected int version = 1;
 
     public Builder setVersion(int version) {
