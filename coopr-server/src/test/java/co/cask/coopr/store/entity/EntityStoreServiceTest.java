@@ -34,13 +34,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Tests for getting and setting admin defined entities.  Test classes for different types of stores must set the
@@ -70,10 +73,16 @@ public abstract class EntityStoreServiceTest {
     Provider result = entityStore.getProvider(provider.getName());
     Assert.assertEquals(provider, result);
 
-    // overwrite should work
+    // bump version should work
     entityStore.writeProvider(provider);
-    result = entityStore.getProvider(provider.getName());
-    Assert.assertEquals(provider, result);
+    entityStore.writeProvider(provider);
+    Collection<Provider> providers = entityStore.getAllProviders();
+    Assert.assertEquals(3, providers.size());
+    Set<Integer> versions = Sets.newHashSet();
+    for (Provider provider1 : providers) {
+      versions.add(provider1.getVersion());
+    }
+    Assert.assertEquals(Sets.newHashSet(1, 2, 3), versions);
 
     // delete should work
     entityStore.deleteProvider(provider.getName());

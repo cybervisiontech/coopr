@@ -54,8 +54,16 @@ public class SQLEntityStoreService extends AbstractIdleService implements Entity
       for (BaseEntityStoreView.EntityType entityType : BaseEntityStoreView.EntityType.values()) {
         String entityName = entityType.getId();
         // immune to sql injection since it comes from the enum
-        String createString = "CREATE TABLE " + entityName +
-          "s ( name VARCHAR(255), tenant_id VARCHAR(255), " + entityName + " BLOB, PRIMARY KEY (tenant_id, name))";
+        String createString;
+        if (entityType.isVersioned()) {
+          createString = "CREATE TABLE " + entityName +
+            "s ( name VARCHAR(255), version BIGINT, tenant_id VARCHAR(255), " +
+            entityName + " BLOB, PRIMARY KEY (tenant_id, name, version))";
+        } else {
+          createString = "CREATE TABLE " + entityName +
+            "s ( name VARCHAR(255), tenant_id VARCHAR(255), " +
+            entityName + " BLOB, PRIMARY KEY (tenant_id, name))";
+        }
         DBHelper.createDerbyTableIfNotExists(createString, dbConnectionPool);
       }
     }

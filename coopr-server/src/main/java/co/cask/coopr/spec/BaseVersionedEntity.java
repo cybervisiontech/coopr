@@ -21,13 +21,13 @@ import com.google.common.base.Objects;
 /**
  * A base for entities that require a name, version and optionally support an icon, description, and label.
  */
-public class BaseVersionEntity extends BaseEntity {
+public class BaseVersionedEntity extends BaseEntity {
 
   protected int version;
 
-  protected BaseVersionEntity(BaseEntity.Builder baseBuilder, int version) {
+  protected BaseVersionedEntity(BaseVersionedEntity.Builder baseBuilder) {
     super(baseBuilder);
-    this.version = version;
+    this.version = baseBuilder.version;
   }
 
   /**
@@ -40,12 +40,30 @@ public class BaseVersionEntity extends BaseEntity {
   }
 
   /**
-   * Increases and retrieves the version of the entity.
+   * Sets the version of the entity.
    *
-   * @return the version of the entity.
+   * @param version the version
    */
-  public int increaseVersion() {
-    return ++version;
+  public void setVersion(int version) {
+    this.version = version;
+  }
+
+  /**
+   * Base builder for creating admin versioned entities.
+   */
+  protected abstract static class Builder<T extends BaseVersionedEntity> extends BaseEntity.Builder<T> {
+    protected int version = 1;
+
+    public Builder setVersion(int version) {
+      this.version = version;
+      return this;
+    }
+
+    public Builder<T> setBaseFields(String name, String label, String description, String icon, int version) {
+      super.setBaseFields(name, label, description, icon);
+      this.version = version;
+      return this;
+    }
   }
 
   @Override
@@ -53,14 +71,14 @@ public class BaseVersionEntity extends BaseEntity {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BaseVersionEntity)) {
+    if (!(o instanceof BaseVersionedEntity)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    BaseVersionEntity that = (BaseVersionEntity) o;
+    BaseVersionedEntity that = (BaseVersionedEntity) o;
 
     return version == that.version;
 

@@ -15,8 +15,7 @@
  */
 package co.cask.coopr.spec.service;
 
-import co.cask.coopr.spec.BaseEntity;
-import co.cask.coopr.spec.BaseVersionEntity;
+import co.cask.coopr.spec.BaseVersionedEntity;
 import co.cask.coopr.spec.Link;
 import co.cask.coopr.spec.ProvisionerAction;
 import com.google.common.base.Objects;
@@ -31,14 +30,14 @@ import java.util.Set;
  * {@link co.cask.coopr.spec.ProvisionerAction} to {@link ServiceAction} that provisioners will need to execute
  * when performing cluster operations such as creation and deletion.
  */
-public final class Service extends BaseVersionEntity {
+public final class Service extends BaseVersionedEntity {
   private final ServiceDependencies dependencies;
   private final Map<ProvisionerAction, ServiceAction> provisionerActions;
   private final Set<Link> links;
 
-  private Service(BaseEntity.Builder baseBuilder, ServiceDependencies dependencies,
-                  Map<ProvisionerAction, ServiceAction> provisionerActions, Set<Link> links, int version) {
-    super(baseBuilder, version);
+  private Service(BaseVersionedEntity.Builder baseBuilder, ServiceDependencies dependencies,
+                  Map<ProvisionerAction, ServiceAction> provisionerActions, Set<Link> links) {
+    super(baseBuilder);
     this.dependencies = dependencies;
     this.provisionerActions = provisionerActions;
     this.links = links;
@@ -83,11 +82,10 @@ public final class Service extends BaseVersionEntity {
   /**
    * Builder for creating a service.
    */
-  public static class Builder extends BaseEntity.Builder<Service> {
+  public static class Builder extends BaseVersionedEntity.Builder<Service> {
     private ServiceDependencies dependencies = ServiceDependencies.EMPTY_SERVICE_DEPENDENCIES;
     private Map<ProvisionerAction, ServiceAction> provisionerActions = ImmutableMap.of();
     private Set<Link> links = ImmutableSet.of();
-    private int version;
 
     @Override
     public Builder setName(String name) {
@@ -116,14 +114,9 @@ public final class Service extends BaseVersionEntity {
       return this;
     }
 
-    public Builder setVersion(int version) {
-      this.version = version;
-      return this;
-    }
-
     @Override
     public Service build() {
-      return new Service(this, dependencies, provisionerActions, links, version);
+      return new Service(this, dependencies, provisionerActions, links);
     }
   }
 

@@ -180,4 +180,6 @@ public class Constants {
   public static final String TENANT_HEADER = "Coopr-TenantID";
   public static final String SUPERADMIN_TENANT = "superadmin";
   public static final String ADMIN_USER = "admin";
+
+  public static final int FIND_MAX_VERSION = 0;
 }

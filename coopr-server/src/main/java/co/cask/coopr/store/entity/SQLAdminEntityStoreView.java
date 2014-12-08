@@ -53,28 +53,27 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
   }
 
   @Override
-  protected void writeVersionEntity(EntityType entityType, String entityName, int entityVersion, byte[] data)
-    throws IOException {
+  protected void writeEntity(EntityType entityType, String entityName, int version, byte[] data) throws IOException {
     try {
       Connection conn = dbConnectionPool.getConnection();
       try {
-        DBPut entityPut = new EntityDBPut(entityType, entityName, data);
+        DBPut entityPut = new VersionedEntityDBPut(entityType, entityName, version, data);
         entityPut.executePut(conn);
       } finally {
         conn.close();
       }
     } catch (SQLException e) {
       throw new IOException("Exception writing entity of type " + entityType.name().toLowerCase()
-                              + " of name " + entityName + " of version " + entityVersion + accountErrorSnippet);
+                              + " of name " + entityName + accountErrorSnippet);
     }
   }
 
   @Override
-  protected void deleteAllEntities(EntityType entityType, String entityName) throws IOException {
+  protected void deleteEntity(EntityType entityType, String entityName) throws IOException {
     try {
       Connection conn = dbConnectionPool.getConnection();
       try {
-        PreparedStatement statement = getDeleteAllStatement(conn, entityType, entityName);
+        PreparedStatement statement = getDeleteStatementWithoutVersion(conn, entityType, entityName);
         try {
           statement.executeUpdate();
         } finally {
@@ -90,11 +89,12 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
   }
 
   @Override
-  protected void deleteEntity(EntityType entityType, String entityName, int entityVersion) throws IOException {
+  protected void deleteEntity(EntityType entityType, String entityName, int entityVersion)
+    throws IOException {
     try {
       Connection conn = dbConnectionPool.getConnection();
       try {
-        PreparedStatement statement = getDeleteStatement(conn, entityType, entityName, entityVersion);
+        PreparedStatement statement = getDeleteStatementWithVersion(conn, entityType, entityName, entityVersion);
         try {
           statement.executeUpdate();
         } finally {
@@ -109,8 +109,8 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
     }
   }
 
-  private PreparedStatement getDeleteAllStatement(Connection conn, EntityType entityType,
-                                                  String entityName) throws SQLException {
+  private PreparedStatement getDeleteStatementWithoutVersion(Connection conn, EntityType entityType,
+                                                             String entityName) throws SQLException {
     String entityTypeId = entityType.getId();
     // immune to sql injection since it comes from the enum.
     String queryStr = "DELETE FROM " + entityTypeId + "s WHERE name=? AND tenant_id=?";
@@ -120,8 +120,8 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
     return statement;
   }
 
-  private PreparedStatement getDeleteStatement(Connection conn, EntityType entityType,
-                                               String entityName, int entityVersion) throws SQLException {
+  private PreparedStatement getDeleteStatementWithVersion(Connection conn, EntityType entityType,
+                                                          String entityName, int entityVersion) throws SQLException {
     String entityTypeId = entityType.getId();
     // immune to sql injection since it comes from the enum.
     String queryStr = "DELETE FROM " + entityTypeId + "s WHERE name=? AND version=? AND tenant_id=?";
@@ -147,9 +147,11 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
     public PreparedStatement createUpdateStatement(Connection conn) throws SQLException {
       String entityTypeId = entityType.getId();
       // immune to sql injection since it comes from the enum.
-      String queryStr = getUpdateQueryString(entityTypeId);
+      String queryStr = "UPDATE " + entityTypeId + "s SET " + entityTypeId + "=? WHERE name=? AND tenant_id=?";
       PreparedStatement statement = conn.prepareStatement(queryStr);
-      setUpdatePreparedStatementParameters(statement);
+      statement.setBytes(1, data);
+      statement.setString(2, entityName);
+      statement.setString(3, account.getTenantId());
       return statement;
     }
 
@@ -161,17 +163,6 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
       PreparedStatement statement = conn.prepareStatement(queryStr);
       setInsertPreparedStatementParameters(statement);
       return statement;
-    }
-
-    public String getUpdateQueryString(String entityTypeId) {
-      return "UPDATE " + entityTypeId + "s SET " + entityTypeId +
-        "=? WHERE name=? AND tenant_id=?";
-    }
-
-    public void setUpdatePreparedStatementParameters(PreparedStatement statement) throws SQLException {
-      statement.setBytes(1, data);
-      statement.setString(2, entityName);
-      statement.setString(3, account.getTenantId());
     }
 
     public String getInsertQueryString(String entityTypeId) {
@@ -186,26 +177,22 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
     }
   }
 
-  private class VersionEntityDBPut extends EntityDBPut {
-    private final int entityVersion;
+  private class VersionedEntityDBPut extends EntityDBPut {
 
-    private VersionEntityDBPut(EntityType entityType, String entityName, int entityVersion, byte[] data) {
+    private final int version;
+
+    private VersionedEntityDBPut(EntityType entityType, String entityName, int version, byte[] data) {
       super(entityType, entityName, data);
-      this.entityVersion = entityVersion;
+      this.version = version;
     }
 
-    @Override
-    public String getUpdateQueryString(String entityTypeId) {
-      return "UPDATE " + entityTypeId + "s SET " + entityTypeId +
-        "=? WHERE name=? AND version=? AND tenant_id=?";
-    }
-
-    @Override
-    public void setUpdatePreparedStatementParameters(PreparedStatement statement) throws SQLException {
-      statement.setBytes(1, data);
-      statement.setString(2, entityName);
-      statement.setInt(3, entityVersion);
-      statement.setString(4, account.getTenantId());
+    public void executePut(Connection conn) throws SQLException {
+      PreparedStatement insertStatement = createInsertStatement(conn);
+      try {
+        insertStatement.executeUpdate();
+      } finally {
+        insertStatement.close();
+      }
     }
 
     @Override
@@ -217,7 +204,7 @@ public class SQLAdminEntityStoreView extends BaseSQLEntityStoreView {
     @Override
     public void setInsertPreparedStatementParameters(PreparedStatement statement) throws SQLException {
       statement.setString(1, entityName);
-      statement.setInt(2, entityVersion);
+      statement.setInt(2, version);
       statement.setString(3, account.getTenantId());
       statement.setBytes(4, data);
     }

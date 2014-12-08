@@ -23,11 +23,11 @@ import java.util.Map;
  * Image type defines different images to use on on clusters, and include information needed by provisioners to
  * provision machines from different providers.
  */
-public final class ImageType extends BaseVersionEntity {
+public final class ImageType extends BaseVersionedEntity {
   private final Map<String, Map<String, String>> providerMap;
 
-  private ImageType(BaseEntity.Builder baseBuilder, Map<String, Map<String, String>> providerMap, int version) {
-    super(baseBuilder, version);
+  private ImageType(BaseVersionedEntity.Builder baseBuilder, Map<String, Map<String, String>> providerMap) {
+    super(baseBuilder);
     this.providerMap = providerMap;
   }
 
@@ -54,23 +54,17 @@ public final class ImageType extends BaseVersionEntity {
   /**
    * Builder for creating a image type.
    */
-  public static class Builder extends BaseEntity.Builder<ImageType> {
+  public static class Builder extends BaseVersionedEntity.Builder<ImageType> {
     private Map<String, Map<String, String>> providerMap;
-    private int version;
 
     public Builder setProviderMap(Map<String, Map<String, String>> providerMap) {
       this.providerMap = providerMap;
       return this;
     }
 
-    public Builder setVersion(int version) {
-      this.version = version;
-      return this;
-    }
-
     @Override
     public ImageType build() {
-      return new ImageType(this, providerMap, version);
+      return new ImageType(this, providerMap);
     }
   }
 

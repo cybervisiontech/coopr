@@ -15,8 +15,7 @@
  */
 package co.cask.coopr.spec.template;
 
-import co.cask.coopr.spec.BaseEntity;
-import co.cask.coopr.spec.BaseVersionEntity;
+import co.cask.coopr.spec.BaseVersionedEntity;
 import co.cask.coopr.spec.Link;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -30,17 +29,17 @@ import java.util.Set;
  * will be used to determine which services to place on which nodes, and what hardware and images to use.  A cluster
  * template also specifies the full set of configuration key values that are needed on the cluster.
  */
-public final class ClusterTemplate extends BaseVersionEntity {
+public final class ClusterTemplate extends BaseVersionedEntity {
   private final ClusterDefaults clusterDefaults;
   private final Constraints constraints;
   private final Compatibilities compatibilities;
   private final Administration administration;
   private final Set<Link> links;
 
-  private ClusterTemplate(BaseEntity.Builder baseBuilder, ClusterDefaults clusterDefaults,
+  private ClusterTemplate(BaseVersionedEntity.Builder baseBuilder, ClusterDefaults clusterDefaults,
                           Compatibilities compatibilities, Constraints constraints, Administration administration,
-                          Set<Link> links, int version) {
-    super(baseBuilder, version);
+                          Set<Link> links) {
+    super(baseBuilder);
     Preconditions.checkArgument(clusterDefaults != null, "cluster defaults must be specified");
     this.clusterDefaults = clusterDefaults;
     this.constraints = constraints;
@@ -106,13 +105,12 @@ public final class ClusterTemplate extends BaseVersionEntity {
   /**
    * Builder for creating cluster templates.
    */
-  public static class Builder extends BaseEntity.Builder<ClusterTemplate> {
+  public static class Builder extends BaseVersionedEntity.Builder<ClusterTemplate> {
     private ClusterDefaults clusterDefaults;
     private Constraints constraints = Constraints.EMPTY_CONSTRAINTS;
     private Compatibilities compatibilities = Compatibilities.EMPTY_COMPATIBILITIES;
     private Administration administration = Administration.EMPTY_ADMINISTRATION;
     private Set<Link> links = ImmutableSet.of();
-    private int version = 1;
 
     @Override
     public Builder setName(String name) {
@@ -157,13 +155,8 @@ public final class ClusterTemplate extends BaseVersionEntity {
       return this;
     }
 
-    public Builder setVersion(int version) {
-      this.version = version;
-      return this;
-    }
-
     public ClusterTemplate build() {
-      return new ClusterTemplate(this, clusterDefaults, compatibilities, constraints, administration, links, version);
+      return new ClusterTemplate(this, clusterDefaults, compatibilities, constraints, administration, links);
     }
   }
 
