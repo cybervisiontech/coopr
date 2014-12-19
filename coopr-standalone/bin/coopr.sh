@@ -58,6 +58,7 @@ export COOPR_SERVER_HOME=${COOPR_HOME}/server
 export COOPR_SERVER_CONF=${COOPR_HOME}/server/conf
 export COOPR_PROVISIONER_CONF=${COOPR_HOME}/provisioner/master/conf
 export PROVISIONER_SITE_CONF=${COOPR_PROVISIONER_CONF}/provisioner-site.xml
+export PROVISIONER_SECURITY_CONF=${COOPR_PROVISIONER_CONF}/provisioner-security.xml
 export COOPR_PROVISIONER_PLUGIN_DIR=${COOPR_HOME}/provisioner/worker/plugins
 export COOPR_LOG_DIR=${COOPR_HOME}/logs
 export COOPR_DATA_DIR=${COOPR_HOME}/data
@@ -165,8 +166,8 @@ fi
 export SECURITY_ENABLED=`read_property security.enabled ${COOPR_SERVER_CONF}/coopr-site.xml`
 export COOPR_SERVER_URI=${COOPR_SERVER_URI:-${COOPR_PROTOCOL}://127.0.0.1:55054}
 
-export TRUST_CERT_PATH=`read_property server.ssl.trust.cert.path ${PROVISIONER_SITE_CONF}`
-export TRUST_CERT_PASSWORD=`read_property server.ssl.trust.cert.password ${PROVISIONER_SITE_CONF}`
+export TRUST_CERT_PATH=`read_property server.ssl.trust.cert.path ${PROVISIONER_SECURITY_CONF}`
+export TRUST_CERT_PASSWORD=`read_property server.ssl.trust.cert.password ${PROVISIONER_SECURITY_CONF}`
 
 if [ -n "${TRUST_CERT_PATH}" ] && [ -n "${TRUST_CERT_PASSWORD}" ]; then
   export CERT_PARAMETER="--cert ${TRUST_CERT_PATH}:${TRUST_CERT_PASSWORD}"
