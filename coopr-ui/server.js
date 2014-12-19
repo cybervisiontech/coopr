@@ -11,8 +11,8 @@ var COOPR_HOME = process.env.COOPR_HOME || (__dirname + '/../'),
       ? parseInt(process.env.COOPR_UI_SSL_PORT || 8443, 10)
       : parseInt(process.env.COOPR_UI_PORT || 8080, 10)
     ),
-    COOPR_UI_KEY_FILE = process.env.COOPR_UI_KEY_FILE || COOPR_HOME + 'cert/server.key',
-    COOPR_UI_CERT_FILE = process.env.COOPR_UI_CERT_FILE || COOPR_HOME + 'cert/server.crt',
+    COOPR_UI_KEY_FILE = process.env.COOPR_UI_KEY_FILE,
+    COOPR_UI_CERT_FILE = process.env.COOPR_UI_CERT_FILE,
     COOPR_SERVER_URI = process.env.COOPR_SERVER_URI || 'http://127.0.0.1:55054';
 
 var pkg = require('./package.json'),

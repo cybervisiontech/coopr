@@ -165,6 +165,9 @@ fi
 export SECURITY_ENABLED=`read_property security.enabled ${COOPR_SERVER_CONF}/coopr-site.xml`
 export COOPR_SERVER_URI=${COOPR_SERVER_URI:-${COOPR_PROTOCOL}://127.0.0.1:55054}
 
+export TRUST_CERT_PATH=`read_property server.ssl.trust.cert.path ${PROVISIONER_SITE_CONF}`
+export TRUST_CERT_PASSWORD=`read_property server.ssl.trust.cert.password ${PROVISIONER_SITE_CONF}`
+
 if [ -n "${TRUST_CERT_PATH}" ] && [ -n "${TRUST_CERT_PASSWORD}" ]; then
   export CERT_PARAMETER="--cert ${TRUST_CERT_PATH}:${TRUST_CERT_PASSWORD}"
 fi

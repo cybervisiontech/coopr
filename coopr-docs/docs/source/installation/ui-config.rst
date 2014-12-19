@@ -30,8 +30,8 @@ To enable running UI with SSL, setup these environment variables:
 ====================================     ==========================    =======================================
    Environment variable                     Default Value                     Description
 ====================================     ==========================    =======================================
-COOPR_UI_KEY_FILE                        COOPR_HOME/cert/server.key     Key file location.
-COOPR_UI_CERT_FILE                       COOPR_HOME/cert/server.crt     Certificate password.
+COOPR_UI_KEY_FILE                           None                        Key file location.
+COOPR_UI_CERT_FILE                          None                        Certificate password.
 ====================================     ==========================    =======================================
 
 To configure UI to support server that uses mutual authentication with SSL, setup these environment variables:
