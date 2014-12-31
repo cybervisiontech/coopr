@@ -39,6 +39,7 @@ public class PluginResourceMetaCodec extends AbstractCodec<ResourceMeta> {
 
     jsonObj.add("name", context.serialize(meta.getName()));
     jsonObj.add("version", context.serialize(meta.getVersion()));
+    jsonObj.add("hash", context.serialize(meta.getHash()));
     jsonObj.add("status", context.serialize(meta.getStatus()));
 
     return jsonObj;
@@ -51,8 +52,9 @@ public class PluginResourceMetaCodec extends AbstractCodec<ResourceMeta> {
 
     String name = context.deserialize(jsonObj.get("name"), String.class);
     Integer version = context.deserialize(jsonObj.get("version"), Integer.class);
+    String hash = context.deserialize(jsonObj.get("hash"), String.class);
     ResourceStatus status = context.deserialize(jsonObj.get("status"), ResourceStatus.class);
 
-    return new ResourceMeta(name, version, status);
+    return new ResourceMeta(name, version, hash, status);
   }
 }

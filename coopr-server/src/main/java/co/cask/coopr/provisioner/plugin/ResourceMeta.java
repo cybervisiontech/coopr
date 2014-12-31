@@ -25,15 +25,17 @@ import com.google.common.base.Preconditions;
 public class ResourceMeta extends NamedEntity {
   private final int version;
   private final ResourceStatus status;
+  private final String hash;
 
-  public ResourceMeta(String name, int version) {
-    this(name, version, ResourceStatus.INACTIVE);
+  public ResourceMeta(String name, int version, String hash) {
+    this(name, version, hash, ResourceStatus.INACTIVE);
   }
 
-  public ResourceMeta(String name, Integer version, ResourceStatus status) {
+  public ResourceMeta(String name, Integer version, String hash, ResourceStatus status) {
     super(name);
     Preconditions.checkArgument(version != null && version >= 0, "Version must be non-null and positive.");
     this.version = version;
+    this.hash = hash;
     this.status = status;
   }
 
@@ -44,6 +46,15 @@ public class ResourceMeta extends NamedEntity {
    */
   public int getVersion() {
     return version;
+  }
+
+  /**
+   * Get the hash.
+   *
+   * @return hash
+   */
+  public String getHash() {
+    return hash;
   }
 
   /**
@@ -68,12 +79,13 @@ public class ResourceMeta extends NamedEntity {
 
     return Objects.equal(name, that.name) &&
       version == that.version &&
-      Objects.equal(status, that.status);
+      Objects.equal(status, that.status) &&
+      Objects.equal(hash, that.hash);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(name, version, status);
+    return Objects.hashCode(name, version, hash, status);
   }
 
   @Override
@@ -81,6 +93,7 @@ public class ResourceMeta extends NamedEntity {
     return Objects.toStringHelper(this)
       .add("name", name)
       .add("version", version)
+      .add("hash", hash)
       .add("status", status)
       .toString();
   }

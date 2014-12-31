@@ -120,19 +120,20 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       try {
         PreparedStatement statement = conn.prepareStatement(
           "INSERT INTO pluginMeta " +
-            "(tenant_id, plugin_type, plugin_name, resource_type, name," +
+            "(tenant_id, plugin_type, plugin_name, resource_type, name, hash," +
             " version, slated, live, deleted, create_time, delete_time) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         try {
           ResourceStatus status = meta.getStatus();
           setConstantFields(statement);
           statement.setString(5, meta.getName());
-          statement.setInt(6, meta.getVersion());
-          statement.setBoolean(7, status.isLiveAfterSync());
-          statement.setBoolean(8, status.isLive());
-          statement.setBoolean(9, false);
-          statement.setTimestamp(10, DBHelper.getTimestamp(System.currentTimeMillis()));
-          statement.setTimestamp(11, null);
+          statement.setString(6, meta.getHash());
+          statement.setInt(7, meta.getVersion());
+          statement.setBoolean(8, status.isLiveAfterSync());
+          statement.setBoolean(9, status.isLive());
+          statement.setBoolean(10, false);
+          statement.setTimestamp(11, DBHelper.getTimestamp(System.currentTimeMillis()));
+          statement.setTimestamp(12, null);
           statement.executeUpdate();
         } finally {
           statement.close();
@@ -220,7 +221,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta " +
             "WHERE tenant_id=? AND plugin_type=? AND plugin_name=? AND resource_type=? AND deleted=false");
         try {
           setConstantFields(statement);
@@ -243,7 +244,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? " +
             "AND plugin_name=? AND resource_type=? AND slated=? AND live=? AND deleted=false");
         try {
           setConstantFields(statement);
@@ -268,7 +269,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta " +
             "WHERE tenant_id=? AND plugin_type=? AND plugin_name=? AND resource_type=? AND name=? AND deleted=false");
         try {
           setConstantFields(statement);
@@ -292,7 +293,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta " +
             "WHERE tenant_id=? AND plugin_type=? AND plugin_name=? AND " +
             "resource_type=? AND name=? AND slated=? AND live=? AND deleted=false");
         try {
@@ -319,7 +320,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? AND " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? AND " +
             "plugin_name=? AND resource_type=? AND slated=true AND deleted=false");
         try {
           setConstantFields(statement);
@@ -342,7 +343,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
       Connection conn = dbConnectionPool.getConnection();
       try {
         PreparedStatement statement = conn.prepareStatement(
-          "SELECT name, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? AND " +
+          "SELECT name, hash, version, slated, live FROM pluginMeta WHERE tenant_id=? AND plugin_type=? AND " +
             "plugin_name=? AND resource_type=? AND live=true AND deleted=false");
         try {
           setConstantFields(statement);
@@ -490,7 +491,7 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
 
   private ResourceMeta getMeta(Connection conn, String name, int version) throws SQLException {
     PreparedStatement statement = conn.prepareStatement(
-      "SELECT name, version, slated, live FROM pluginMeta WHERE tenant_id=? " +
+      "SELECT name, hash, version, slated, live FROM pluginMeta WHERE tenant_id=? " +
         "AND plugin_type=? AND plugin_name=? AND resource_type=? AND name=? AND version=? AND deleted=false");
     try {
       setConstantFields(statement);
@@ -504,10 +505,11 @@ public class SQLPluginResourceTypeView implements PluginResourceTypeView {
 
   private ResourceMeta metaFromResult(ResultSet results) throws SQLException {
     String name = results.getString(1);
-    int version = results.getInt(2);
-    boolean slated = results.getBoolean(3);
-    boolean live = results.getBoolean(4);
-    return new ResourceMeta(name, version, ResourceStatus.fromLiveFlags(live, slated));
+    String hash = results.getString(2);
+    int version = results.getInt(3);
+    boolean slated = results.getBoolean(4);
+    boolean live = results.getBoolean(5);
+    return new ResourceMeta(name, version, hash, ResourceStatus.fromLiveFlags(live, slated));
   }
 
   private void setConstantFields(PreparedStatement statement) throws SQLException {

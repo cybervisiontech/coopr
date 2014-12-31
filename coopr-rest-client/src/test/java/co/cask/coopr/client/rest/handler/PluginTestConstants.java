@@ -47,7 +47,7 @@ public class PluginTestConstants {
   public static final AutomatorType AUTOMATOR_TYPE = Entities.AutomatorTypeExample.CHEF;
   public static final ProviderType PROVIDER_TYPE = Entities.ProviderTypeExample.JOYENT;
   public static final Map TYPE_RESOURCES = ImmutableMap.of(REACTOR_RESOURCE,
-    ImmutableSet.of(new ResourceMeta(REACTOR_RESOURCE, 1, ResourceStatus.ACTIVE),
-                    new ResourceMeta(REACTOR_RESOURCE, 2, ResourceStatus.ACTIVE)));
+    ImmutableSet.of(new ResourceMeta(REACTOR_RESOURCE, 1, "", ResourceStatus.ACTIVE),
+                    new ResourceMeta(REACTOR_RESOURCE, 2, "", ResourceStatus.ACTIVE)));
 
 }

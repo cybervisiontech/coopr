@@ -50,6 +50,8 @@ import java.util.Set;
  */
 public class PluginHandlerTest extends ServiceTestBase {
 
+  private static final String EMPTY_LINE_HASH = "d41d8cd98f00b204e9800998ecf8427e";
+
   @Before
   public void setupPluginHandlerTest() throws Exception {
     entityStoreService.getView(SUPERADMIN_ACCOUNT).writeAutomatorType(Entities.AutomatorTypeExample.SHELL);
@@ -61,7 +63,7 @@ public class PluginHandlerTest extends ServiceTestBase {
   public void testNonAdminGetsForbidden() throws Exception {
     ResourceType type1 = new ResourceType(PluginType.PROVIDER, "joyent", "keys");
     ResourceType type2 = new ResourceType(PluginType.AUTOMATOR, "shell", "script");
-    ResourceMeta meta = new ResourceMeta("name", 1);
+    ResourceMeta meta = new ResourceMeta("name", 1, "");
     assertResponseStatus(doPostExternalAPI(getNamePath(type1, "name"), "contents", USER1_HEADERS), HttpResponseStatus.FORBIDDEN);
     assertResponseStatus(doPostExternalAPI(getNamePath(type2, "name"), "contents", USER1_HEADERS), HttpResponseStatus.FORBIDDEN);
     assertResponseStatus(doDeleteExternalAPI(getVersionedPath(type1, meta), USER1_HEADERS), HttpResponseStatus.FORBIDDEN);
@@ -140,32 +142,32 @@ public class PluginHandlerTest extends ServiceTestBase {
   public void testSync() throws Exception {
     ResourceType cookbooks = new ResourceType(PluginType.AUTOMATOR, "chef-solo", "cookbooks");
     ResourceType keys = new ResourceType(PluginType.PROVIDER, "joyent", "keys");
-    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, ResourceStatus.INACTIVE);
-    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.ACTIVE);
-    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.INACTIVE);
-    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, ResourceStatus.ACTIVE);
-    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, ResourceStatus.INACTIVE);
-    ResourceMeta dev1 = new ResourceMeta("dev", 1, ResourceStatus.INACTIVE);
-    ResourceMeta dev2 = new ResourceMeta("dev", 2, ResourceStatus.ACTIVE);
-    ResourceMeta research1 = new ResourceMeta("research", 1, ResourceStatus.INACTIVE);
+    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.ACTIVE);
+    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.INACTIVE);
+    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, "", ResourceStatus.ACTIVE);
+    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, "", ResourceStatus.INACTIVE);
+    ResourceMeta dev1 = new ResourceMeta("dev", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta dev2 = new ResourceMeta("dev", 2, "", ResourceStatus.ACTIVE);
+    ResourceMeta research1 = new ResourceMeta("research", 1, "", ResourceStatus.INACTIVE);
     PluginResourceTypeView automatorTypeView = metaStoreService.getResourceTypeView(ADMIN_ACCOUNT, cookbooks);
     PluginResourceTypeView providerTypeView = metaStoreService.getResourceTypeView(ADMIN_ACCOUNT, keys);
 
     // add 3 versions of hadoop cookbook
-    automatorTypeView.add(new ResourceMeta("hadoop", 1));
-    automatorTypeView.add(new ResourceMeta("hadoop", 2));
-    automatorTypeView.add(new ResourceMeta("hadoop", 3));
+    automatorTypeView.add(new ResourceMeta("hadoop", 1, ""));
+    automatorTypeView.add(new ResourceMeta("hadoop", 2, ""));
+    automatorTypeView.add(new ResourceMeta("hadoop", 3, ""));
 
     // add 2 versions of mysql cookbook
-    automatorTypeView.add(new ResourceMeta("mysql", 1));
-    automatorTypeView.add(new ResourceMeta("mysql", 2));
+    automatorTypeView.add(new ResourceMeta("mysql", 1, ""));
+    automatorTypeView.add(new ResourceMeta("mysql", 2, ""));
 
     // add 2 versions of dev keys
-    providerTypeView.add(new ResourceMeta("dev", 1));
-    providerTypeView.add(new ResourceMeta("dev", 2));
+    providerTypeView.add(new ResourceMeta("dev", 1, ""));
+    providerTypeView.add(new ResourceMeta("dev", 2, ""));
 
     // add 1 version of research keys
-    providerTypeView.add(new ResourceMeta("research", 1));
+    providerTypeView.add(new ResourceMeta("research", 1, ""));
 
     // stage version 2 of hadoop
     assertResponseStatus(doPostExternalAPI(getVersionedPath(cookbooks, "hadoop", 2) + "/stage", "", ADMIN_HEADERS),
@@ -215,9 +217,9 @@ public class PluginHandlerTest extends ServiceTestBase {
     response = doGetExternalAPI(getTypePath(cookbooks), ADMIN_HEADERS);
     assertResponseStatus(response, HttpResponseStatus.OK);
     actual = bodyToMetaMap(response);
-    hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.INACTIVE);
-    hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.ACTIVE);
-    mysql1 = new ResourceMeta("mysql", 1, ResourceStatus.INACTIVE);
+    hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.INACTIVE);
+    hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.ACTIVE);
+    mysql1 = new ResourceMeta("mysql", 1, "", ResourceStatus.INACTIVE);
     expected = ImmutableMap.<String, Set<ResourceMeta>>of(
       "hadoop", ImmutableSet.of(hadoop1, hadoop2, hadoop3),
       "mysql", ImmutableSet.of(mysql1, mysql2)
@@ -250,7 +252,7 @@ public class PluginHandlerTest extends ServiceTestBase {
   private void testPutAndGet(PluginType type, String pluginName, String resourceType) throws Exception {
     String contents = RandomStringUtils.randomAlphanumeric(8 * Constants.PLUGIN_RESOURCE_CHUNK_SIZE);
     ResourceType pluginResourceType = new ResourceType(type, pluginName, resourceType);
-    ResourceMeta meta = new ResourceMeta("hello", 1, ResourceStatus.INACTIVE);
+    ResourceMeta meta = new ResourceMeta("hello", 1, "", ResourceStatus.INACTIVE);
     assertSendContents(contents, type, pluginName, resourceType, "hello");
     // get metadata
     HttpResponse response = doGetExternalAPI(getNamePath(pluginResourceType, meta.getName()), ADMIN_HEADERS);
@@ -276,18 +278,19 @@ public class PluginHandlerTest extends ServiceTestBase {
 
   private void testVersions(PluginType type, String pluginName, String resourceType) throws Exception{
     String contents = "some contents";
+    String contents1 = "some contents1";
     ResourceType pluginResourceType = new ResourceType(type, pluginName, resourceType);
-    ResourceMeta meta1 = new ResourceMeta("name", 1, ResourceStatus.INACTIVE);
+    ResourceMeta meta1 = new ResourceMeta("name", 1, "", ResourceStatus.INACTIVE);
     assertSendContents(contents, pluginResourceType, meta1.getName());
 
-    // stage version2
-    meta1 = new ResourceMeta(meta1.getName(), meta1.getVersion(), ResourceStatus.STAGED);
+    // stage version1
+    meta1 = new ResourceMeta(meta1.getName(), meta1.getVersion(), EMPTY_LINE_HASH, ResourceStatus.STAGED);
     assertResponseStatus(doPostExternalAPI(getVersionedPath(pluginResourceType, meta1) + "/stage", "", ADMIN_HEADERS),
                          HttpResponseStatus.OK);
     // should still see both versions when getting all versions of the resource name
     HttpResponse response = doGetExternalAPI(getNamePath(pluginResourceType, meta1.getName()), ADMIN_HEADERS);
     assertResponseStatus(response, HttpResponseStatus.OK);
-    Assert.assertEquals(Sets.newHashSet(meta1, meta1), bodyToMetaSet(response));
+    Assert.assertEquals(Sets.newHashSet(meta1), bodyToMetaSet(response));
     // check get staged versions of the resources
     response = doGetExternalAPI(getTypePath(pluginResourceType) + "?status=staged", ADMIN_HEADERS);
     assertResponseStatus(response, HttpResponseStatus.OK);
@@ -300,12 +303,12 @@ public class PluginHandlerTest extends ServiceTestBase {
     assertResponseStatus(response, HttpResponseStatus.OK);
     Assert.assertEquals(Sets.newHashSet(meta1), bodyToMetaSet(response));
 
-    ResourceMeta meta2 = new ResourceMeta("name", 2, ResourceStatus.INACTIVE);
-    assertSendContents(contents, pluginResourceType, meta2.getName());
+    ResourceMeta meta2 = new ResourceMeta("name", 2, "", ResourceStatus.INACTIVE);
+    assertSendContents(contents1, pluginResourceType, meta2.getName());
 
-    // stage version1
-    meta1 = new ResourceMeta(meta1.getName(), meta1.getVersion(), ResourceStatus.INACTIVE);
-    meta2 = new ResourceMeta(meta2.getName(), meta2.getVersion(), ResourceStatus.STAGED);
+    // stage version2
+    meta1 = new ResourceMeta(meta1.getName(), meta1.getVersion(), "", ResourceStatus.INACTIVE);
+    meta2 = new ResourceMeta(meta2.getName(), meta2.getVersion(), "", ResourceStatus.STAGED);
     assertResponseStatus(doPostExternalAPI(getVersionedPath(pluginResourceType, meta2) + "/stage", "", ADMIN_HEADERS),
                          HttpResponseStatus.OK);
     // should still see both versions when getting all versions of the resource name
@@ -325,7 +328,7 @@ public class PluginHandlerTest extends ServiceTestBase {
     Assert.assertEquals(Sets.newHashSet(meta2), bodyToMetaSet(response));
 
     // recall
-    meta2 = new ResourceMeta(meta2.getName(), meta2.getVersion(), ResourceStatus.INACTIVE);
+    meta2 = new ResourceMeta(meta2.getName(), meta2.getVersion(), "", ResourceStatus.INACTIVE);
     assertResponseStatus(doPostExternalAPI(getVersionedPath(pluginResourceType, meta2) + "/recall", "", ADMIN_HEADERS),
                          HttpResponseStatus.OK);
     // should still see both versions when getting all versions of the resource name
@@ -344,10 +347,10 @@ public class PluginHandlerTest extends ServiceTestBase {
 
   private void testGetAndDelete(ResourceType type) throws Exception {
     String contents = "some contents";
-    ResourceMeta meta1 = new ResourceMeta("name1", 1, ResourceStatus.INACTIVE);
-    ResourceMeta meta2 = new ResourceMeta("name1", 2, ResourceStatus.INACTIVE);
-    ResourceMeta meta3 = new ResourceMeta("name2", 1, ResourceStatus.INACTIVE);
-    ResourceMeta meta4 = new ResourceMeta("name3", 1, ResourceStatus.INACTIVE);
+    ResourceMeta meta1 = new ResourceMeta("name1", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta meta2 = new ResourceMeta("name1", 2, "", ResourceStatus.INACTIVE);
+    ResourceMeta meta3 = new ResourceMeta("name2", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta meta4 = new ResourceMeta("name3", 1, "", ResourceStatus.INACTIVE);
     assertSendContents(contents, type, meta1.getName());
     assertSendContents(contents, type, meta2.getName(), HttpResponseStatus.BAD_REQUEST);
     assertSendContents(contents, type, meta3.getName());

@@ -55,13 +55,13 @@ public abstract class PluginResourceMetaStoreTest {
   public void testGetNumResources() throws Exception {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     // for account1 write 6 resources (7 but one is deleted) in all different states
-    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r1", 1, ResourceStatus.ACTIVE));
-    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r1", 2, ResourceStatus.INACTIVE));
-    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r2", 1, ResourceStatus.INACTIVE));
-    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r2", 2, ResourceStatus.STAGED));
-    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 1, ResourceStatus.RECALLED));
-    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 2, ResourceStatus.STAGED));
-    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 3, ResourceStatus.STAGED));
+    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r1", 1, "", ResourceStatus.ACTIVE));
+    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r1", 2, "", ResourceStatus.INACTIVE));
+    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r2", 1, "", ResourceStatus.INACTIVE));
+    service.getResourceTypeView(account1, type1).add(new ResourceMeta("r2", 2, "", ResourceStatus.STAGED));
+    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 1, "", ResourceStatus.RECALLED));
+    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 2, "", ResourceStatus.STAGED));
+    service.getResourceTypeView(account1, type2).add(new ResourceMeta("r3", 3, "", ResourceStatus.STAGED));
     service.getResourceTypeView(account1, type2).delete("r3", 3);
 
     Assert.assertEquals(6, service.getAccountView(account1).numResources());
@@ -75,7 +75,7 @@ public abstract class PluginResourceMetaStoreTest {
     PluginResourceTypeView view = service.getResourceTypeView(account1, type1);
     String name = "name";
     int version = 1;
-    ResourceMeta meta = new ResourceMeta(name, version);
+    ResourceMeta meta = new ResourceMeta(name, version, "");
 
     view.add(meta);
     Assert.assertTrue(view.exists(name, version));
@@ -93,7 +93,7 @@ public abstract class PluginResourceMetaStoreTest {
     PluginResourceTypeView view2 = service.getResourceTypeView(account2, type1);
     String name = "name";
     int version = 1;
-    ResourceMeta meta = new ResourceMeta(name, version);
+    ResourceMeta meta = new ResourceMeta(name, version, "");
 
     view1.add(meta);
     Assert.assertTrue(view1.exists(name, version));
@@ -127,7 +127,7 @@ public abstract class PluginResourceMetaStoreTest {
     PluginResourceTypeView view2 = service.getResourceTypeView(account1, type2);
     String name = "name";
     int version = 1;
-    ResourceMeta meta = new ResourceMeta(name, version);
+    ResourceMeta meta = new ResourceMeta(name, version, "");
 
     view1.add(meta);
     Assert.assertTrue(view1.exists(name, version));
@@ -165,12 +165,12 @@ public abstract class PluginResourceMetaStoreTest {
   public void testGetAll() throws Exception {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     PluginResourceTypeView view = service.getResourceTypeView(account1, type1);
-    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, ResourceStatus.INACTIVE);
-    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.STAGED);
-    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.ACTIVE);
-    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, ResourceStatus.STAGED);
-    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, ResourceStatus.ACTIVE);
-    ResourceMeta apache = new ResourceMeta("apache", 1, ResourceStatus.RECALLED);
+    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.STAGED);
+    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.ACTIVE);
+    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, "", ResourceStatus.STAGED);
+    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, "", ResourceStatus.ACTIVE);
+    ResourceMeta apache = new ResourceMeta("apache", 1, "", ResourceStatus.RECALLED);
 
     Set<ResourceMeta> all = ImmutableSet.of(hadoop1, hadoop2, hadoop3, mysql1, mysql2, apache);
     Set<ResourceMeta> hadoops = ImmutableSet.of(hadoop1, hadoop2, hadoop3);
@@ -238,13 +238,13 @@ public abstract class PluginResourceMetaStoreTest {
   public void testStage() throws Exception {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     PluginResourceTypeView view = service.getResourceTypeView(account1, type1);
-    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, ResourceStatus.INACTIVE);
-    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.RECALLED);
-    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.INACTIVE);
-    ResourceMeta mysql = new ResourceMeta("mysql", 1, ResourceStatus.STAGED);
-    ResourceMeta apache = new ResourceMeta("apache", 1, ResourceStatus.ACTIVE);
-    ResourceMeta php1 = new ResourceMeta("php", 1, ResourceStatus.ACTIVE);
-    ResourceMeta php2 = new ResourceMeta("php", 2, ResourceStatus.INACTIVE);
+    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.RECALLED);
+    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.INACTIVE);
+    ResourceMeta mysql = new ResourceMeta("mysql", 1, "", ResourceStatus.STAGED);
+    ResourceMeta apache = new ResourceMeta("apache", 1, "", ResourceStatus.ACTIVE);
+    ResourceMeta php1 = new ResourceMeta("php", 1, "", ResourceStatus.ACTIVE);
+    ResourceMeta php2 = new ResourceMeta("php", 2, "", ResourceStatus.INACTIVE);
 
     view.add(hadoop1);
     view.add(hadoop2);
@@ -284,7 +284,7 @@ public abstract class PluginResourceMetaStoreTest {
   public void testStageOnNothingIsNoOp() throws Exception {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     PluginResourceTypeView view = service.getResourceTypeView(account1, type1);
-    ResourceMeta hadoop = new ResourceMeta("hadoop", 1, ResourceStatus.STAGED);
+    ResourceMeta hadoop = new ResourceMeta("hadoop", 1, "", ResourceStatus.STAGED);
     view.add(hadoop);
     // if we stage a non-existent version, the current staged version should not be affected
     view.stage(hadoop.getName(), hadoop.getVersion() + 1);
@@ -295,11 +295,11 @@ public abstract class PluginResourceMetaStoreTest {
   public void testRecall() throws Exception {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     PluginResourceTypeView view = service.getResourceTypeView(account1, type1);
-    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, ResourceStatus.INACTIVE);
-    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.RECALLED);
-    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.INACTIVE);
-    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, ResourceStatus.STAGED);
-    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, ResourceStatus.ACTIVE);
+    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.RECALLED);
+    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.INACTIVE);
+    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, "", ResourceStatus.STAGED);
+    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, "", ResourceStatus.ACTIVE);
 
     view.add(hadoop1);
     view.add(hadoop2);
@@ -339,13 +339,13 @@ public abstract class PluginResourceMetaStoreTest {
     PluginMetaStoreService service = getPluginResourceMetaStoreService();
     PluginResourceTypeView view1 = service.getResourceTypeView(account1, type1);
     PluginResourceTypeView view2 = service.getResourceTypeView(account1, type2);
-    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, ResourceStatus.INACTIVE);
-    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, ResourceStatus.STAGED);
-    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, ResourceStatus.RECALLED);
-    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, ResourceStatus.INACTIVE);
-    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, ResourceStatus.STAGED);
-    ResourceMeta apache1 = new ResourceMeta("apache", 1, ResourceStatus.INACTIVE);
-    ResourceMeta apache2 = new ResourceMeta("apache", 2, ResourceStatus.RECALLED);
+    ResourceMeta hadoop1 = new ResourceMeta("hadoop", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta hadoop2 = new ResourceMeta("hadoop", 2, "", ResourceStatus.STAGED);
+    ResourceMeta hadoop3 = new ResourceMeta("hadoop", 3, "", ResourceStatus.RECALLED);
+    ResourceMeta mysql1 = new ResourceMeta("mysql", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta mysql2 = new ResourceMeta("mysql", 2, "", ResourceStatus.STAGED);
+    ResourceMeta apache1 = new ResourceMeta("apache", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta apache2 = new ResourceMeta("apache", 2, "", ResourceStatus.RECALLED);
 
     view1.add(hadoop1);
     view1.add(hadoop2);
@@ -355,10 +355,10 @@ public abstract class PluginResourceMetaStoreTest {
     view1.add(apache1);
     view1.add(apache2);
 
-    ResourceMeta bob1 = new ResourceMeta("bob", 1, ResourceStatus.INACTIVE);
-    ResourceMeta bob2 = new ResourceMeta("bob", 2, ResourceStatus.STAGED);
-    ResourceMeta sally1 = new ResourceMeta("sally", 1, ResourceStatus.ACTIVE);
-    ResourceMeta sue1 = new ResourceMeta("sue", 1, ResourceStatus.RECALLED);
+    ResourceMeta bob1 = new ResourceMeta("bob", 1, "", ResourceStatus.INACTIVE);
+    ResourceMeta bob2 = new ResourceMeta("bob", 2, "", ResourceStatus.STAGED);
+    ResourceMeta sally1 = new ResourceMeta("sally", 1, "", ResourceStatus.ACTIVE);
+    ResourceMeta sue1 = new ResourceMeta("sue", 1, "", ResourceStatus.RECALLED);
 
     view2.add(bob1);
     view2.add(bob2);

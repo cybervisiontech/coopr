@@ -275,8 +275,8 @@ public class SuperadminHandlerTest extends ServiceTestBase {
     // write superadmin plugin resources
     superadminView.writeAutomatorType(Entities.AutomatorTypeExample.CHEF);
     ResourceType type1 = new ResourceType(PluginType.AUTOMATOR, "chef-solo", "cookbooks");
-    ResourceMeta meta1 = new ResourceMeta("name1", 3, ResourceStatus.ACTIVE);
-    ResourceMeta meta2 = new ResourceMeta("name2", 2, ResourceStatus.INACTIVE);
+    ResourceMeta meta1 = new ResourceMeta("name1", 3, "", ResourceStatus.ACTIVE);
+    ResourceMeta meta2 = new ResourceMeta("name2", 2, "", ResourceStatus.INACTIVE);
     metaStoreService.getResourceTypeView(Account.SUPERADMIN, type1).add(meta1);
     metaStoreService.getResourceTypeView(Account.SUPERADMIN, type1).add(meta2);
     writePluginResource(Account.SUPERADMIN, type1, meta1.getName(), meta1.getVersion(), "meta1 contents");

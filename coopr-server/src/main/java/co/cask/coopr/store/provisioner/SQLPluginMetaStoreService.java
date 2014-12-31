@@ -66,6 +66,7 @@ public class SQLPluginMetaStoreService extends AbstractIdleService implements Pl
           "plugin_name VARCHAR(255), " +
           "resource_type VARCHAR(255), " +
           "name VARCHAR(255), " +
+          "hash VARCHAR(32), " +
           "version INTEGER, " +
           "live BOOLEAN, " +
           "slated BOOLEAN, " +

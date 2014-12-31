@@ -37,13 +37,17 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,6 +79,31 @@ public class ResourceService extends AbstractIdleService {
   }
 
   /**
+   * Retrieves hash for plugin resource.
+   *
+   * @param request the request to get plugin resource from
+   * @return hash for plugin resource
+   */
+  public String generateResourceHash(HttpRequest request) throws IOException {
+    try {
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ChannelBuffer buffer = request.getContent();
+      buffer.readBytes(outputStream, buffer.readableBytes());
+      outputStream.close();
+      buffer.resetReaderIndex();
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      byte[] hash = md.digest(outputStream.toByteArray());
+      StringBuilder builder = new StringBuilder(2 * hash.length);
+      for (byte b : hash) {
+        builder.append(String.format("%02x", b & 0xff));
+      }
+      return builder.toString();
+    } catch (NoSuchAlgorithmException e) {
+      throw new IOException(e);
+    }
+  }
+
+  /**
    * Create a body consumer for streaming resource contents into the persistent store.
    *
    * @param account Account that is uploading the resource
@@ -88,6 +117,7 @@ public class ResourceService extends AbstractIdleService {
   public BodyConsumer createResourceBodyConsumer(final Account account,
                                                  final ResourceType resourceType,
                                                  final String name,
+                                                 final String hash,
                                                  final HttpResponder responder) throws IOException {
     final ZKInterProcessReentrantLock lock = getResourceLock(account, resourceType, name);
     lock.acquire();
@@ -95,7 +125,7 @@ public class ResourceService extends AbstractIdleService {
       PluginResourceTypeView view = metaStoreService.getResourceTypeView(account, resourceType);
       // ok to do versioning this way since we have a lock
       final int version = view.getHighestVersion(name) + 1;
-      final ResourceMeta resourceMeta = new ResourceMeta(name, version);
+      final ResourceMeta resourceMeta = new ResourceMeta(name, version, hash);
       LOG.debug("getting output stream for version {} of resource {} of type {} for account {}",
                 version, name, resourceType, account);
       // output stream is used to stream resource contents to the plugin store

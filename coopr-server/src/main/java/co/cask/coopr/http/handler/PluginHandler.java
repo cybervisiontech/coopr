@@ -32,13 +32,16 @@ import co.cask.http.HttpResponder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +102,8 @@ public class PluginHandler extends AbstractAuthHandler {
       return null;
     }
 
-    return uploadResource(responder, account, PluginType.AUTOMATOR, automatortypeId, resourceType, resourceName);
+    return uploadResource(request, responder,
+                          account, PluginType.AUTOMATOR, automatortypeId, resourceType, resourceName);
   }
 
   /**
@@ -128,7 +132,8 @@ public class PluginHandler extends AbstractAuthHandler {
       return null;
     }
 
-    return uploadResource(responder, account, PluginType.PROVIDER, providertypeId, resourceType, resourceName);
+    return uploadResource(request, responder,
+                          account, PluginType.PROVIDER, providertypeId, resourceType, resourceName);
   }
 
   /**
@@ -531,20 +536,27 @@ public class PluginHandler extends AbstractAuthHandler {
   }
 
   private boolean checkAlreadyExists(Account account, ResourceType pluginResourceType,
-                                     String resourceName) throws IOException, MissingEntityException {
-    return !getResources(account, pluginResourceType, resourceName, ResourceStatus.INACTIVE).isEmpty();
+                                     String resourceName, String hash) throws IOException, MissingEntityException {
+    Set<ResourceMeta> resourceMetaSet = getResources(account, pluginResourceType, resourceName, null);
+    for (ResourceMeta meta : resourceMetaSet) {
+      if (hash.equals(meta.getHash())) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  private BodyConsumer uploadResource(HttpResponder responder, Account account, PluginType type,
+  private BodyConsumer uploadResource(HttpRequest request, HttpResponder responder, Account account, PluginType type,
                                       String pluginName, String resourceType,
                                       String resourceName) {
     ResourceType pluginResourceType = new ResourceType(type, pluginName, resourceType);
     try {
-      if (checkAlreadyExists(account, pluginResourceType, resourceName)) {
+      String hash = resourceService.generateResourceHash(request);
+      if (checkAlreadyExists(account, pluginResourceType, resourceName, hash)) {
         responder.sendString(HttpResponseStatus.BAD_REQUEST, "Resource already exists");
         return null;
       }
-      return resourceService.createResourceBodyConsumer(account, pluginResourceType, resourceName, responder);
+      return resourceService.createResourceBodyConsumer(account, pluginResourceType, resourceName, hash, responder);
     } catch (IOException e) {
       LOG.error("Exception uploading resource.", e);
       responder.sendString(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Error uploading resource");
